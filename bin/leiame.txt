@@ -1,0 +1,340 @@
+================================================================================
+                              MONOPOLY GAME
+                         Robbie Carvalho - 2311833
+                          Theo Canuto - 2311293
+ 	 A classe que contém o conteúdo da main é Main.java, presente em view
+  Link para o vídeo de apresentação do trabalho: https://youtu.be/0k-V-HhOBW4
+================================================================================
+
+
+================================================================================
+1. INFORMACOES GERAIS
+================================================================================
+
+- Extensao: .txt
+- Separador: Virgula (,)
+- Linhas de comentario: Comecam com '#'
+- Secoes: Delimitadas por linhas de cabecalho iniciadas com '#'
+
+================================================================================
+2. ESTRUTURA DO ARQUIVO
+================================================================================
+
+O arquivo e dividido em 5 secoes, na seguinte ordem:
+
+1. GAME_INFO: Informacoes gerais da partida
+2. PLAYERS: Dados de todos os jogadores
+3. PROPERTIES_STREETS: Propriedades do tipo rua (com construcoes)
+4. PROPERTIES_COMPANIES: Propriedades do tipo companhia
+5. DECK_STATE: Estado do baralho de cartas
+
+================================================================================
+3. SECAO: GAME_INFO
+================================================================================
+
+Contem informacoes gerais sobre o estado da partida.
+
+Formato:
+--------
+# GAME_INFO
+currentPlayerIndex,<indice>
+numberOfPlayers,<quantidade>
+bankCash,<dinheiro_do_banco>
+
+Campos:
+-------
+- currentPlayerIndex: Indice do jogador cuja vez esta ativa
+                      Valores validos: 0 ate (numberOfPlayers - 1)
+
+- numberOfPlayers: Quantidade total de jogadores na partida
+                   Valores validos: 3 a 6
+
+- bankCash: Quantidade atual de dinheiro no banco
+            Valores validos: inteiro >= 0
+            Valor inicial padrao: 200000
+
+Exemplo:
+--------
+# GAME_INFO
+currentPlayerIndex,2
+numberOfPlayers,4
+bankCash,195000
+
+================================================================================
+4. SECAO: PLAYERS
+================================================================================
+
+Contem os dados de todos os jogadores da partida.
+
+Formato:
+--------
+# PLAYERS
+# id,name,color,money,position,inJail,getOutOfJailCards,alive
+<id_jogador1>,<nome1>,<cor1>,<dinheiro1>,<posicao1>,<prisao1>,<cartas1>,<vivo1>
+<id_jogador2>,<nome2>,<cor2>,<dinheiro2>,<posicao2>,<prisao2>,<cartas2>,<vivo2>
+...
+
+Campos:
+-------
+- id: Identificador unico do jogador (ex: "player1", "player2")
+      Formato: string sem espacos ou virgulas
+
+- name: Nome do jogador exibido no jogo
+        Formato: string (evitar virgulas)
+        Padrao: "Player 1", "Player 2", etc.
+
+- color: Cor do peao do jogador
+         Valores validos: RED, BLUE, GREEN, YELLOW, ORANGE, PURPLE
+         Deve corresponder aos valores do enum PlayerColor
+
+- money: Quantidade de dinheiro que o jogador possui
+         Valores validos: inteiro >= 0
+         Dinheiro inicial padrao: 4000
+
+- position: Posicao atual do jogador no tabuleiro (indice da casa)
+            Valores validos: 0 a 39 (tabuleiro tem 40 casas)
+            Posicao inicial: 0 (casa "Start")
+
+- inJail: Indica se o jogador esta preso
+          Valores validos: true ou false
+
+- getOutOfJailCards: Quantidade de cartas "Sair da Prisao" que o jogador possui
+                     Valores validos: inteiro >= 0 (mas no contexto do jogo, 0 ou 1)
+
+- alive: Indica se o jogador ainda esta no jogo (nao faliu)
+         Valores validos: true ou false
+         Se false, o jogador esta eliminado e seu peao nao aparece no tabuleiro
+
+Exemplo:
+--------
+# PLAYERS
+# id,name,color,money,position,inJail,getOutOfJailCards,alive
+player1,Player 1,RED,1500,10,false,0,true
+player2,Player 2,BLUE,0,15,false,0,false
+player3,Player 3,GREEN,2000,5,false,1,true
+player4,Player 4,YELLOW,800,22,true,0,true
+
+Observacoes:
+------------
+- player2 esta falido (alive=false, money=0)
+- player3 possui uma carta "Sair da Prisao"
+- player4 esta preso (inJail=true)
+
+================================================================================
+5. SECAO: PROPERTIES_STREETS
+================================================================================
+
+Contem informacoes sobre propriedades do tipo RUA que possuem dono.
+Inclui dados sobre construcoes (casas e hoteis).
+
+Formato:
+--------
+# PROPERTIES_STREETS
+# squareIndex,ownerId,houses,hasHotel
+<indice1>,<dono1>,<casas1>,<hotel1>
+<indice2>,<dono2>,<casas2>,<hotel2>
+...
+
+Campos:
+-------
+- squareIndex: Indice da casa no tabuleiro
+               Valores validos: 0 a 39
+               Apenas casas do tipo "StreetOwnableSquare"
+
+- ownerId: ID do jogador que possui a propriedade
+           Deve corresponder ao campo "id" de um jogador em PLAYERS
+           Formato: string (ex: "player1")
+
+- houses: Quantidade de casas construidas nesta propriedade
+          Valores validos: 0 a 4
+          0 = sem casas (apenas terreno)
+          1 a 4 = quantidade de casas
+
+- hasHotel: Indica se ha um hotel construido
+            Valores validos: true ou false
+            Regra: se hasHotel=true, entao houses DEVE > 0
+
+Exemplo:
+--------
+# PROPERTIES_STREETS
+# squareIndex,ownerId,houses,hasHotel
+1,player1,2,false
+3,player1,2,true
+6,player3,0,false
+8,player3,4,true
+11,player1,1,false
+
+Observacoes:
+------------
+- Propriedades sem dono NAO aparecem nesta secao
+- Casa indice 8 tem hotel (houses=4, hasHotel=true)
+- Casa indice 6 e apenas terreno (houses=0, hasHotel=false)
+
+================================================================================
+6. SECAO: PROPERTIES_COMPANIES
+================================================================================
+
+Contem informacoes sobre propriedades do tipo COMPANHIA que possuem dono.
+Companhias nao tem construcoes, apenas propriedade.
+
+Formato:
+--------
+# PROPERTIES_COMPANIES
+# squareIndex,ownerId
+<indice1>,<dono1>
+<indice2>,<dono2>
+...
+
+Campos:
+-------
+- squareIndex: Indice da casa no tabuleiro
+               Valores validos: 0 a 39
+               Apenas casas do tipo "CompanyOwnableSquare"
+
+- ownerId: ID do jogador que possui a propriedade
+           Deve corresponder ao campo "id" de um jogador em PLAYERS
+           Formato: string (ex: "player2")
+
+Exemplo:
+--------
+# PROPERTIES_COMPANIES
+# squareIndex,ownerId
+12,player2
+28,player2
+5,player4
+
+Observacoes:
+------------
+- Propriedades sem dono NAO aparecem nesta secao
+- Companhias nao tem casas ou hoteis
+
+================================================================================
+7. SECAO: DECK_STATE
+================================================================================
+
+Contem informacoes sobre o estado do baralho de cartas, preservando a ordem
+exata das cartas restantes no deck. Esta ordem e critica pois cada carta
+tirada vai para o final da fila, e ao carregar uma partida salva, o jogo
+deve continuar exatamente de onde parou.
+
+Formato:
+--------
+# DECK_STATE
+# Ordem completa das cartas no baralho (do topo ao fim)
+# cardId,cardType,cardValue
+<id_carta1>,<tipo1>,<valor1>
+<id_carta2>,<tipo2>,<valor2>
+...
+
+Campos:
+-------
+- cardId: Identificador unico da carta no baralho
+          Valores validos: inteiro >= 0
+          Corresponde ao indice original da carta no arquivo de configuracao
+
+- cardType: Tipo da carta (define o efeito quando tirada)
+            Valores validos:
+            * PAY_BANK: Jogador paga ao banco
+            * RECEIVE_BANK: Jogador recebe do banco
+            * PAY_ALL: Jogador paga a todos os outros jogadores vivos
+            * RECEIVE_ALL: Jogador recebe de todos os outros jogadores vivos
+            * GO_TO_JAIL: Jogador vai para a prisao
+            * GET_OUT_OF_JAIL: Jogador ganha carta de saida livre da prisao
+
+- cardValue: Valor monetario associado a carta (se aplicavel)
+             Valores validos: inteiro >= 0
+             Usado nos tipos PAY_BANK, RECEIVE_BANK, PAY_ALL, RECEIVE_ALL
+             Para GO_TO_JAIL e GET_OUT_OF_JAIL, este valor e sempre 0
+
+Exemplo:
+--------
+# DECK_STATE
+# Ordem completa das cartas no baralho (do topo ao fim)
+# cardId,cardType,cardValue
+5,PAY_BANK,50
+12,RECEIVE_BANK,100
+3,GO_TO_JAIL,0
+8,PAY_ALL,25
+1,RECEIVE_BANK,200
+15,PAY_BANK,75
+
+Observacoes:
+------------
+- A ordem das linhas representa a ordem das cartas no deck (primeira linha = topo)
+- Cartas "GET_OUT_OF_JAIL" que foram tiradas e estao com jogadores NAO
+  aparecem nesta lista (foram removidas do deck)
+- Quando uma partida e carregada, o deck e reconstruido exatamente nesta ordem,
+  preservando o historico de cartas ja tiradas
+
+================================================================================
+8. SECAO: JAIL_CARDS_OUT
+================================================================================
+
+Contem informacoes sobre cartas "Sair da Prisao" que foram retiradas do
+baralho e estao em posse dos jogadores.
+
+Formato:
+--------
+# JAIL_CARDS_OUT
+getOutOfJailCardsOut,<quantidade>
+
+Campos:
+-------
+- getOutOfJailCardsOut: Quantidade de cartas "Sair da Prisao" que foram
+                        retiradas do baralho e estao com jogadores
+                        Valores validos: inteiro >= 0
+                        Este valor deve ser igual a soma de todas as cartas
+                        "getOutOfJailCards" dos jogadores
+
+Exemplo:
+--------
+# JAIL_CARDS_OUT
+getOutOfJailCardsOut,1
+
+Observacoes:
+------------
+- Se nenhum jogador tiver cartas, o valor sera 0
+- A soma dos "getOutOfJailCards" de todos os jogadores deve ser igual
+  a este valor
+
+================================================================================
+9. EXEMPLO COMPLETO DE ARQUIVO
+================================================================================
+
+# GAME_INFO
+currentPlayerIndex,0
+numberOfPlayers,3
+bankCash,198500
+
+# PLAYERS
+# id,name,color,money,position,inJail,getOutOfJailCards,alive
+player1,Player 1,RED,1850,15,false,1,true
+player2,Player 2,BLUE,500,8,true,0,true
+player3,Player 3,GREEN,0,20,false,0,false
+
+# PROPERTIES_STREETS
+# squareIndex,ownerId,houses,hasHotel
+1,player1,2,false
+3,player1,2,false
+6,player1,0,false
+11,player2,1,false
+13,player2,1,false
+
+# PROPERTIES_COMPANIES
+# squareIndex,ownerId
+12,player1
+28,player2
+
+# DECK_STATE
+# Ordem completa das cartas no baralho (do topo ao fim)
+# cardId,cardType,cardValue
+7,RECEIVE_BANK,150
+2,PAY_BANK,100
+14,PAY_ALL,50
+9,RECEIVE_ALL,20
+4,GO_TO_JAIL,0
+11,RECEIVE_BANK,75
+6,PAY_BANK,25
+
+# JAIL_CARDS_OUT
+getOutOfJailCardsOut,1
